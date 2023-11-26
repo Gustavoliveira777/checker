@@ -1,16 +1,31 @@
 import face_recognition
 import cv2
+import io
 import numpy as np
 import base64
+from PIL import Image
+from model import DataModels
+def roomValidate(imageRoomPIL, classroomId, dbComponent):
+    classe = dbComponent.session.query(DataModels.Classroom).get(classroomId)
+    encodings_conhecidos = []
+    nomes = []
+    beneficiaryList = classe.beneficiaries
 
-def roomValidate(imageRoomPIL, beneficiariesFaceImgPathArray=[]):
+    for beneficiary in beneficiaryList:
+        bnImgBytes = base64.b64decode(beneficiary.image)
+        bnImg = Image.open(io.BytesIO(bnImgBytes))
+        npBnImg = np.array(bnImg)
+        encodings_conhecidos.append(face_recognition.face_encodings(npBnImg)[0])
+        nomes.append({"id":beneficiary.id,"name":beneficiary.name,"documentNumber":beneficiary.documentNumber})
 
+        #incoudingues.append(face_recognition.face_encodings(beneficiary.)[0])
     # Carrega as imagens 
-    imagem_conhecida = face_recognition.load_image_file("C:\\Users\\olive\\OneDrive\\Documentos\\Projetos\\checker\\images\\peoples\\gustavao.jpg")
-    imagem_conhecida2 = face_recognition.load_image_file("C:\\Users\\olive\\OneDrive\\Documentos\\Projetos\\checker\\images\\peoples\\henrique_baitola.jpg")
-    imagem_conhecida3 = face_recognition.load_image_file("C:\\Users\\olive\\OneDrive\\Documentos\\Projetos\\checker\\images\\peoples\\pimenis.jpg")
-    encodings_conhecidos = [face_recognition.face_encodings(imagem_conhecida)[0],face_recognition.face_encodings(imagem_conhecida2)[0],face_recognition.face_encodings(imagem_conhecida3)[0]]
-    nomes = ["Gustavo", "Henrique","Andre"]
+    #imagem_conhecida = face_recognition.load_image_file("C:\\Users\\olive\\OneDrive\\Documentos\\Projetos\\checker\\images\\peoples\\gustavao.jpg")
+    #imagem_conhecida2 = face_recognition.load_image_file("C:\\Users\\olive\\OneDrive\\Documentos\\Projetos\\checker\\images\\peoples\\henrique_baitola.jpg")
+    #imagem_conhecida3 = face_recognition.load_image_file("C:\\Users\\olive\\OneDrive\\Documentos\\Projetos\\checker\\images\\peoples\\pimenis.jpg")
+    #encodings_conhecidos = [face_recognition.face_encodings(imagem_conhecida)[0],face_recognition.face_encodings(imagem_conhecida2)[0],face_recognition.face_encodings(imagem_conhecida3)[0]]
+
+    #nomes = ["Gustavo", "Henrique","Andre"]
     
     # Transforma a imagem da sala recebida da API e transformada em PIL para o formato NumPY para compreensão do OpenCV
     np_imageRoom = np.array(imageRoomPIL)
@@ -33,9 +48,9 @@ def roomValidate(imageRoomPIL, beneficiariesFaceImgPathArray=[]):
         #Guarda as pessoas encontradas
         if True in matches:
             indice_match = matches.index(True)
-            nome = nomes[indice_match]
+            nome = nomes[indice_match]["documentNumber"]
             color = (34, 139, 34) #Pinta o quadrado de verde pra Identificados
-            founds.append(nome)
+            founds.append(nomes[indice_match])
 
         # Desenha um retângulo ao redor do rosto e escrever o nome
         cv2.rectangle(imagemAAnalizar, (left, top), (right, bottom), color , 2)
