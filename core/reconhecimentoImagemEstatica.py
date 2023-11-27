@@ -12,21 +12,14 @@ def roomValidate(imageRoomPIL, classroomId, dbComponent):
     beneficiaryList = classe.beneficiaries
 
     for beneficiary in beneficiaryList:
-        bnImgBytes = base64.b64decode(beneficiary.image)
-        bnImg = Image.open(io.BytesIO(bnImgBytes))
-        npBnImg = np.array(bnImg)
-        encodings_conhecidos.append(face_recognition.face_encodings(npBnImg)[0])
-        nomes.append({"id":beneficiary.id,"name":beneficiary.name,"documentNumber":beneficiary.documentNumber})
+        if beneficiary.active:
+            bnImgBytes = base64.b64decode(beneficiary.image)
+            bnImg = Image.open(io.BytesIO(bnImgBytes))
+            npBnImg = np.array(bnImg)
+            encodings_conhecidos.append(face_recognition.face_encodings(npBnImg)[0])
+            nomes.append({"id":beneficiary.id,"name":beneficiary.name,"documentNumber":beneficiary.documentNumber})
 
-        #incoudingues.append(face_recognition.face_encodings(beneficiary.)[0])
-    # Carrega as imagens 
-    #imagem_conhecida = face_recognition.load_image_file("C:\\Users\\olive\\OneDrive\\Documentos\\Projetos\\checker\\images\\peoples\\gustavao.jpg")
-    #imagem_conhecida2 = face_recognition.load_image_file("C:\\Users\\olive\\OneDrive\\Documentos\\Projetos\\checker\\images\\peoples\\henrique_baitola.jpg")
-    #imagem_conhecida3 = face_recognition.load_image_file("C:\\Users\\olive\\OneDrive\\Documentos\\Projetos\\checker\\images\\peoples\\pimenis.jpg")
-    #encodings_conhecidos = [face_recognition.face_encodings(imagem_conhecida)[0],face_recognition.face_encodings(imagem_conhecida2)[0],face_recognition.face_encodings(imagem_conhecida3)[0]]
-
-    #nomes = ["Gustavo", "Henrique","Andre"]
-    
+   
     # Transforma a imagem da sala recebida da API e transformada em PIL para o formato NumPY para compreensão do OpenCV
     np_imageRoom = np.array(imageRoomPIL)
     imagemAAnalizar = cv2.cvtColor(np_imageRoom, cv2.COLOR_RGB2BGR)
